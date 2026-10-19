@@ -9,75 +9,227 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // Perbaikan syntax di Line 24
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: ToeflScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class ToeflScreen extends StatelessWidget {
+  const ToeflScreen({super.key});
 
-  final String title;
+  final List<Map<String, String>> riwayatTes = const [
+    {'tanggal': '02/03/2022', 'nilai': '150'},
+    {'tanggal': '01/02/2022', 'nilai': '140'},
+    {'tanggal': '12/01/2022', 'nilai': '170'},
+    {'tanggal': '11/12/2021', 'nilai': '110'},
+    {'tanggal': '10/11/2021', 'nilai': '180'},
+    {'tanggal': '09/10/2021', 'nilai': '130'},
+    {'tanggal': '02/03/2021', 'nilai': '150'},
+    {'tanggal': '01/02/2021', 'nilai': '140'},
+    {'tanggal': '12/01/2021', 'nilai': '170'},
+    {'tanggal': '11/12/2020', 'nilai': '110'},
+    {'tanggal': '10/11/2020', 'nilai': '180'},
+    {'tanggal': '09/10/2020', 'nilai': '130'},
+    {'tanggal': '02/03/2020', 'nilai': '150'},
+    {'tanggal': '01/02/2020', 'nilai': '160'},
+    {'tanggal': '12/01/2020', 'nilai': '165'},
+    {'tanggal': '11/12/2019', 'nilai': '170'},
+    {'tanggal': '10/11/2019', 'nilai': '160'},
+    {'tanggal': '09/10/2019', 'nilai': '160'},
+  ];
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Perubahan di Line 66 (AppBar)
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        leading: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: CircleAvatar(child: Icon(Icons.person)),
-        ),
-        title: const Text(
-          'Welcome, 103122400005 – Nadia Tambunan',
-          style: TextStyle(fontSize: 16),
-          textAlign: TextAlign.right,
-        ),
-      ),
-      // Perubahan di Line 73 (Body)
-      body: Align(
-        alignment: Alignment.bottomCenter,
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: const LinearGradient(
-                colors: [
-                  Color.fromARGB(255, 44, 99, 143),
-                  Color.fromARGB(255, 179, 19, 19),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/nadia.jpg',
+                        fit: BoxFit.cover,
+                        width: 48,
+                        height: 48,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: const [
+                      Text(
+                        'Welcome,',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF673AB7),
+                        ),
+                      ),
+                      Text(
+                        '103122400005 - Nadia Tambunan',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-            ),
-            child: const Center(
-              child: Text(
-                'Container Gradient',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2196F3), Color(0xFFE040FB)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Status tes TOEFL Anda:',
+                      style: TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'LULUS',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: const [
+                        _ScoreSubItem(title: 'Listening', score: '80'),
+                        _ScoreSubItem(title: 'Structure', score: '80'),
+                        _ScoreSubItem(title: 'Reading', score: '90'),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
+              const SizedBox(height: 24),
+              const Text(
+                'Riwayat Tes',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: riwayatTes.length,
+                  separatorBuilder: (context, index) => const Divider(
+                    height: 1,
+                    thickness: 0.8,
+                    color: Color(0xFFE0E0E0),
+                  ),
+                  itemBuilder: (context, index) {
+                    final item = riwayatTes[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Tanggal tes:',
+                                style: TextStyle(
+                                  color: Color(0xFF448AFF),
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Nilai: ${item['nilai']}',
+                                style: const TextStyle(
+                                  color: Color(0xFF448AFF),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                item['tanggal']!,
+                                style: const TextStyle(
+                                  color: Color(0xFF448AFF),
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                item['nilai']!,
+                                style: const TextStyle(
+                                  color: Color(0xFF448AFF),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ScoreSubItem extends StatelessWidget {
+  final String title;
+  final String score;
+
+  const _ScoreSubItem({required this.title, required this.score});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          score,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
