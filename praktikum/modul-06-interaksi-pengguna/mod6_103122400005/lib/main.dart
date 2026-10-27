@@ -10,146 +10,210 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'ListView dengan Dialog',
+      title: 'Jurnal ListView + FAB',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const TechListPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-// Model data untuk menyimpan informasi setiap elemen
-class AppData {
-  final String title;
-  final String subtitle;
-  final String additionalInfo;
-  final Color iconColor;
-
-  AppData({
-    required this.title,
-    required this.subtitle,
-    required this.additionalInfo,
-    required this.iconColor,
-  });
-}
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class TechListPage extends StatefulWidget {
+  const TechListPage({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<TechListPage> createState() => _TechListPageState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  // Daftar data yang akan ditampilkan di ListView
-  final List<AppData> appList = [
-    AppData(
-      title: 'Native App',
-      subtitle: 'Android, iOS',
-      additionalInfo: 'Java, Kotlin, Swift, C#',
-      iconColor: Colors.red,
-    ),
-    AppData(
-      title: 'Hybrid App',
-      subtitle: 'Android, iOS, Web',
-      additionalInfo: 'Javascript, Dart',
-      iconColor: Colors.grey,
-    ),
-  ];
+class _TechListPageState extends State<TechListPage> {
+  // List untuk menyimpan data yang ditambahkan dari form
+  final List<Map<String, dynamic>> _techList = [];
 
-  // Fungsi untuk memunculkan dialog detail
-  void _showDetailDialog(BuildContext context, AppData data) {
+  // Fungsi untuk memunculkan Dialog Form
+  void _showAddDialog() {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController platformController = TextEditingController();
+    final TextEditingController langController = TextEditingController();
+
+    DateTime? selectedDate;
+    String selectedColor = 'Blue';
+    final List<String> colorOptions = ['Blue', 'Red', 'Green'];
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: const Text(
-            'Detail',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                data.title,
-                style: const TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+      builder: (context) {
+        // Menggunakan StatefulBuilder agar UI di dalam dialog (seperti DatePicker & Dropdown) bisa di-update
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Add New Tech'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: 'Tech Name'),
+                    ),
+                    TextField(
+                      controller: platformController,
+                      decoration: const InputDecoration(labelText: 'Platform'),
+                    ),
+                    TextField(
+                      controller: langController,
+                      decoration: const InputDecoration(labelText: 'Lang'),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          selectedDate == null
+                              ? 'No date selected'
+                              : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null && picked != selectedDate) {
+                              setStateDialog(() {
+                                selectedDate = picked;
+                              });
+                            }
+                          },
+                          child: const Text('Select Date'),
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: Colors.deepPurple.shade100,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: selectedColor,
+                      decoration: const InputDecoration(
+                        labelText: 'Choose Color',
+                      ),
+                      items: colorOptions.map((String color) {
+                        return DropdownMenuItem<String>(
+                          value: color,
+                          child: Text(color),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setStateDialog(() {
+                            selectedColor = newValue;
+                          });
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                data.subtitle,
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
-              ),
-              Text(
-                data.additionalInfo,
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Close',
-                style: TextStyle(color: Colors.green),
-              ),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pop(context), // Tutup dialog jika batal
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Tambahkan data ke dalam list saat Save ditekan
+                    setState(() {
+                      _techList.add({
+                        'name': nameController.text,
+                        'platform': platformController.text,
+                        'lang': langController.text,
+                        'date': selectedDate != null
+                            ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
+                            : 'No Date',
+                        'color': selectedColor,
+                      });
+                    });
+                    Navigator.pop(context); // Tutup dialog setelah simpan
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
+  }
+
+  // Fungsi helper untuk mengubah string warna menjadi objek Color
+  Color _getColor(String colorName) {
+    switch (colorName) {
+      case 'Red':
+        return Colors.red;
+      case 'Green':
+        return Colors.green;
+      case 'Blue':
+      default:
+        return Colors.blue;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ListView dengan Dialog'),
+        title: const Text('Jurnal ListView + FAB'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      // Menggunakan ListView.builder untuk merender daftar elemen
       body: ListView.builder(
-        padding: const EdgeInsets.all(10),
-        itemCount: appList.length,
+        itemCount: _techList.length,
         itemBuilder: (context, index) {
-          final data = appList[index];
+          final item = _techList[index];
           return Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: Colors.grey.shade300, width: 1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            margin: const EdgeInsets.only(bottom: 10),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: data.iconColor,
-                radius: 15,
+              leading: CircleAvatar(backgroundColor: _getColor(item['color'])),
+              title: Text(item['name']),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${item['platform']} - ${item['lang']}'),
+                  const SizedBox(height: 4),
+                  Text('Date: ${item['date']}'),
+                ],
               ),
-              title: Text(
-                data.title,
-                style: const TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Text(data.subtitle),
-              // Menampilkan dialog saat elemen di klik
-              onTap: () => _showDetailDialog(context, data),
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Tampilkan Snackbar saat FAB ditekan
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('FAB Clicked'),
+              action: SnackBarAction(
+                label: 'Add',
+                onPressed:
+                    _showAddDialog, // Panggil Dialog jika action "Add" ditekan
+              ),
+            ),
+          );
+        },
+        backgroundColor: Colors.deepPurple.shade50,
+        child: const Icon(Icons.add, color: Colors.deepPurple),
       ),
     );
   }
